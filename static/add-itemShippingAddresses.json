@@ -1,0 +1,41 @@
+{
+  "actions": [
+    {
+      "action": "addItemShippingAddress",
+      "address": {
+        "company": "commercetools Inc",
+        "streetName": "Blackwell St",
+        "streetNumber": "318",
+        "city": "Durham",
+        "postalCode": "27701",
+        "state": "NC",
+        "country": "US",
+        "key": "DURHAM"
+      }
+    },
+    {
+      "action": "addItemShippingAddress",
+      "address": {
+        "company": "commercetools GmbH",
+        "streetName": "Adams-Lehmann-Straße",
+        "streetNumber": "44",
+        "city": "Munich",
+        "postalCode": "80797",
+        "country": "DE",
+        "key": "MUNICH"
+      }
+    },
+    {
+      "action": "addItemShippingAddress",
+      "address": {
+        "company": "commercetools GmbH",
+        "streetName": "Sonnenallee",
+        "streetNumber": "223",
+        "city": "Berlin",
+        "postalCode": "12059",
+        "country": "DE",
+        "key": "BERLIN"
+      }
+    }
+  ]
+}

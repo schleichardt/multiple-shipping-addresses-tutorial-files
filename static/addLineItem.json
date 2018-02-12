@@ -1,0 +1,25 @@
+{
+  "actions": [
+    {
+      "action": "addLineItem",
+      "quantity": 100,
+      "productId": "productId-value",
+      "shippingDetails": {
+        "targets": [
+          {
+            "addressKey": "BERLIN",
+            "quantity": 50
+          },
+          {
+            "addressKey": "DURHAM",
+            "quantity": 25
+          },
+          {
+            "addressKey": "MUNICH",
+            "quantity": 25
+          }
+        ]
+      }
+    }
+  ]
+}

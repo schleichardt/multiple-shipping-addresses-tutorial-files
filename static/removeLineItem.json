@@ -1,0 +1,21 @@
+{
+  "actions": [
+    {
+      "action": "removeLineItem",
+      "quantity": 20,
+      "lineItemId": "lineItemId-value",
+      "shippingDetailsToRemove": {
+        "targets": [
+          {
+            "addressKey": "DURHAM",
+            "quantity": 15
+          },
+          {
+            "addressKey": "MUNICH",
+            "quantity": 5
+          }
+        ]
+      }
+    }
+  ]
+}
