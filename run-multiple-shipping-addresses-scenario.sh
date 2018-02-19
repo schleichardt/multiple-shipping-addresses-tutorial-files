@@ -55,7 +55,7 @@ echo Authentication with the Client Credentials Flow
 # fetches a token with complete read and write access to the project
 accessTokenResponse=$(http --check-status -b -a $clientId:$clientSecret --form POST $authUrl/oauth/token \
   grant_type=client_credentials scope=manage_project:$projectKey)
-accessToken=$(echo $accessTokenResponse | jq -r .access_token)
+accessToken=$(echo $accessTokenResponse | jq -er .access_token)
 
 #=======================================================================================================================
 echo Set standard HTTP headers
@@ -71,11 +71,11 @@ echo Setup product type, tax category and product
 
 productType=$(http --check-status --session-read-only=ctp -b POST $apiUrl/$projectKey/product-types \
   name="productType$RANDOM" description="productType")
-productTypeId=$(echo $productType | jq -r .id)
+productTypeId=$(echo $productType | jq -er .id)
 
 taxCategory=$(http --check-status --session-read-only=ctp -b POST $apiUrl/$projectKey/tax-categories \
   name="taxCat$RANDOM" rates:='[{"name": "de", "amount": 0.19, "includedInPrice": true, "country": "DE"}]')
-taxCategoryId=$(echo $taxCategory | jq -r .id )
+taxCategoryId=$(echo $taxCategory | jq -er .id )
 
 product_draft=$(cat <<-EOF
 {
@@ -102,7 +102,7 @@ product_draft=$(cat <<-EOF
 }
 EOF
 )
-productId=$(echo $product_draft | http --check-status --session-read-only=ctp $apiUrl/$projectKey/products | jq -r .id)
+productId=$(echo $product_draft | http --check-status --session-read-only=ctp $apiUrl/$projectKey/products | jq -er .id)
 
 #=======================================================================================================================
 echo Scenario: Setting the shipping address quantity when the line item is already in the cart
@@ -125,26 +125,26 @@ cartDraft=$(cat <<-EOF
 EOF
 )
 cart=$(echo $cartDraft | http --check-status --session-read-only=ctp $apiUrl/$projectKey/carts)
-cartId=$(echo $cart | jq -r .id)
-cartVersion=$(echo $cart | jq -r .version)
-lineItemId=$(echo $cart | jq -r .lineItems[0].id)
-echo $cart | jq "$interestingCartFields" > $targetFolder/given-cart.json
+cartId=$(echo $cart | jq -er .id)
+cartVersion=$(echo $cart | jq -er .version)
+lineItemId=$(echo $cart | jq -er .lineItems[0].id)
+echo $cart | jq -e "$interestingCartFields" > $targetFolder/given-cart.json
 
 # add multiple shipping addresses to the cart
-cat $sourceFolder/add-itemShippingAddresses.json | jq ". + {version: $cartVersion}" \
+cat $sourceFolder/add-itemShippingAddresses.json | jq -e ". + {version: $cartVersion}" \
   > $targetFolder/add-itemShippingAddresses.json
 cart=$(cat $targetFolder/add-itemShippingAddresses.json | \
   http --check-status --session-read-only=ctp "$apiUrl/$projectKey/carts/$cartId")
-cartVersion=$(echo $cart | jq -r .version)
-echo $cart | jq "$interestingCartFields" > $targetFolder/cartWithItemShippingAddresses.json
+cartVersion=$(echo $cart | jq -er .version)
+echo $cart | jq -e "$interestingCartFields" > $targetFolder/cartWithItemShippingAddresses.json
 
 # set where the line items should go
-cat $sourceFolder/setLineItemShippingDetails.json | jq ". + {version: $cartVersion}" | \
+cat $sourceFolder/setLineItemShippingDetails.json | jq -e ". + {version: $cartVersion}" | \
   sed "s/lineItemId-value/$lineItemId/g" > $targetFolder/setLineItemShippingDetails.json
 cart=$(cat $targetFolder/setLineItemShippingDetails.json | \
   http --check-status --session-read-only=ctp "$apiUrl/$projectKey/carts/$cartId")
-cartVersion=$(echo $cart | jq -r .version)
-echo $cart | jq "$interestingCartFields" > $targetFolder/cartWithItemShippingDetailsSet.json
+cartVersion=$(echo $cart | jq -er .version)
+echo $cart | jq -e "$interestingCartFields" > $targetFolder/cartWithItemShippingDetailsSet.json
 
 #=======================================================================================================================
 echo Scenario: Setting the shipping address quantity when managing a line item
@@ -164,33 +164,33 @@ removeLineItem=$(cat <<-EOF
 EOF
 )
 cart=$(echo $removeLineItem | http --check-status --session-read-only=ctp "$apiUrl/$projectKey/carts/$cartId")
-cartVersion=$(echo $cart | jq -r .version)
-echo "$cart" | jq "$interestingCartFields" > $targetFolder/cartReadyForAddLineItem.json
+cartVersion=$(echo $cart | jq -er .version)
+echo "$cart" | jq -e "$interestingCartFields" > $targetFolder/cartReadyForAddLineItem.json
 
 # add line item with shipping details to the empty cart
-cat $sourceFolder/addLineItem.json | jq '. + {version: '$cartVersion'}' | \
+cat $sourceFolder/addLineItem.json | jq -e '. + {version: '$cartVersion'}' | \
   sed "s/productId-value/$productId/g" > $targetFolder/addLineItem.json
 cart=$(cat $targetFolder/addLineItem.json | \
   http --check-status --session-read-only=ctp "$apiUrl/$projectKey/carts/$cartId")
-cartVersion=$(echo $cart | jq -r .version)
-lineItemId=$(echo $cart | jq -r .lineItems[0].id)
-echo $cart | jq "$interestingCartFields" > $targetFolder/cartWithAddedLineItem.json
+cartVersion=$(echo $cart | jq -er .version)
+lineItemId=$(echo $cart | jq -er .lineItems[0].id)
+echo $cart | jq -e "$interestingCartFields" > $targetFolder/cartWithAddedLineItem.json
 
 # reduce the line item quantity along with the shipping details quantity
-cat $sourceFolder/removeLineItem.json | jq '. + {version: '$cartVersion'}' | sed "s/lineItemId-value/$lineItemId/g" \
+cat $sourceFolder/removeLineItem.json | jq -e '. + {version: '$cartVersion'}' | sed "s/lineItemId-value/$lineItemId/g" \
   > $targetFolder/removeLineItem.json
 cart=$(cat $targetFolder/removeLineItem.json | \
   http --check-status --session-read-only=ctp "$apiUrl/$projectKey/carts/$cartId")
-cartVersion=$(echo $cart | jq -r .version)
-echo $cart | jq "$interestingCartFields" > $targetFolder/cartWithRemovedLineItem.json
+cartVersion=$(echo $cart | jq -er .version)
+echo $cart | jq -e "$interestingCartFields" > $targetFolder/cartWithRemovedLineItem.json
 
 # set absolute quantities
-cat $sourceFolder/changeLineItemQuantity.json | jq '. + {version: '$cartVersion'}' | \
+cat $sourceFolder/changeLineItemQuantity.json | jq -e '. + {version: '$cartVersion'}' | \
   sed "s/lineItemId-value/$lineItemId/g" > $targetFolder/changeLineItemQuantity.json
 cart=$(cat $targetFolder/changeLineItemQuantity.json | \
   http --check-status --session-read-only=ctp "$apiUrl/$projectKey/carts/$cartId")
-cartVersion=$(echo $cart | jq -r .version)
-echo $cart | jq "$interestingCartFields" > $targetFolder/cartWithChangedLineItemQuantity.json
+cartVersion=$(echo $cart | jq -er .version)
+echo $cart | jq -e "$interestingCartFields" > $targetFolder/cartWithChangedLineItemQuantity.json
 
 #=======================================================================================================================
 echo -e "${green}Completed scenarios successfully${noColor}"
